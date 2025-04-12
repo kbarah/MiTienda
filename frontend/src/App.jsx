@@ -1,70 +1,57 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper
-} from '@mui/material';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-function App() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loggedIn, setLoggedIn] = useState(false);
+// Páginas
+import LoginPage from './pages/LoginPage';
+import WelcomePage from './pages/WelcomePage';
+import SettingsPage from './pages/SettingsPage';
 
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post('http://localhost:5500/login', {
-        username,
-        password,
-      });
-
-      if (res.data.success) {
-        setLoggedIn(true);
-      }
-    } catch (err) {
-      alert('Usuario o contraseña incorrectos');
-    }
-  };
+export default function App({ toggleTheme, mode }) {
+  const [user, setUser] = useState(null);
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={4} sx={{ p: 4, mt: 10 }}>
-        {!loggedIn ? (
-          <>
-            <Typography variant="h4" align="center" gutterBottom>
-              Iniciar sesión
-            </Typography>
-            <Box display="flex" flexDirection="column" gap={2}>
-              <TextField
-                label="Usuario"
-                variant="outlined"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+    <BrowserRouter>
+      <Routes>
+        {/* Redirige la raíz a login */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Login */}
+        <Route path="/login" element={<LoginPage onLogin={setUser} />} />
+
+        {/* Página principal (Welcome) */}
+        <Route
+          path="/home"
+          element={
+            user ? (
+              <WelcomePage
+                username={user}
+                onLogout={() => setUser(null)}
+                toggleTheme={toggleTheme}
+                mode={mode}
               />
-              <TextField
-                label="Contraseña"
-                type="password"
-                variant="outlined"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        {/* Configuración */}
+        <Route
+          path="/settings"
+          element={
+            user ? (
+              <SettingsPage
+                username={user}
+                toggleTheme={toggleTheme}
+                mode={mode}
               />
-              <Button variant="contained" color="primary" onClick={handleLogin}>
-                Entrar
-              </Button>
-            </Box>
-          </>
-        ) : (
-          <Typography variant="h4" align="center">
-            ¡Bienvenido, {username}!
-          </Typography>
-        )}
-      </Paper>
-    </Container>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;
 
